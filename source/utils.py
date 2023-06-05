@@ -268,7 +268,7 @@ def get_population(data, code, group = "total_population"):
     # Export to Data Lake as .csv.gz 
     file = pop_geo_adj_.copy()
     file = file.drop(columns = "geometry")
-    path = "Development Data Partnership/Facebook - High resolution population density map/public-fb-data/csv"
+    path = "Development Data Partnership/Facebook - High resolution population density map/public-fb-data/csv/"
     path = scldatalake + f"{path}/{code.upper()}/{name}"
     file.to_csv(path, compression = 'gzip')
     
