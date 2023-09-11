@@ -9,6 +9,7 @@ Created: April 05, 2023
 # Basics 
 #-------------------------------------------------------------------------------#
 # Libraries
+import io
 import os 
 import re
 import time
@@ -18,6 +19,7 @@ import requests
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+from datetime import datetime
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 from geopandas.tools import sjoin
@@ -30,6 +32,7 @@ sclbucket   = os.environ.get("sclbucket")
 scldatalake = os.environ.get("scldatalake")
 
 # Resources and buckets
+s3        = boto3.client('s3')
 s3_       = boto3.resource("s3")
 s3_bucket = s3_.Bucket(sclbucket)
 
@@ -51,9 +54,19 @@ def get_iadb():
     """
     
     # Import country names
+        # Define path and S3 object 
     file = "Manuals and Standards/IADB country and area codes for statistical use/IADB_country_codes_admin_0.xlsx"
-    path = scldatalake + file
-    data = pd.read_excel(path, engine = 'openpyxl')
+    obj  = s3.get_object(Bucket = sclbucket, Key = file)
+    
+        # Load excel file from S3 into memory and create file-like object from the bytes read
+    excel_data = obj['Body'].read()
+    excel_file = io.BytesIO(excel_data)
+    
+        # Datafile
+    data = pd.read_excel(excel_file, engine = 'openpyxl')
+    
+    #path = scldatalake + file
+    #data = pd.read_excel(path, engine = 'openpyxl')
 
     # Select rows/columns of interest
     data = data[~data.iadb_region_code.isna()]
@@ -82,13 +95,13 @@ def get_iadb():
 
 # Administrative shapefiles
 #-------------------------------------------------------------------------------#
-def get_country_shp(code, level = 0):
+def get_country_shp(code = "", level = 0):
     """
     gets the country's shapefile at the selected admin level 
     
     Parameters
     ----------
-    code : str
+    code : str, optional
         country's isoalpha3 code
     level: int, optional 
         administrative level (default is 0)
@@ -100,8 +113,13 @@ def get_country_shp(code, level = 0):
     """
     
     # Import data
-    code = code.lower()
-    file = f"Geospatial Basemaps/Cartographic Boundary Files/LAC-26/level-{level}/{code}-level-{level}.shp"
+    if code == "":
+        file = f"Geospatial Basemaps/Cartographic Boundary Files/LAC-26/region/level-{level}/lac-level-{level}.shp"
+    else:
+        code = code.lower()
+        file = f"Geospatial Basemaps/Cartographic Boundary Files/LAC-26/level-{level}/{code}-level-{level}.shp"
+    
+    # Import data
     path = scldatalake + file
     shp  = gpd.read_file(path)
     
@@ -313,6 +331,100 @@ def get_amenity_official(amenity, official):
     
     # Healthcare Facilities
     if amenity == "Healthcare":
+        # Argentina
+        #--------------------------------------------------------
+        # Import data
+        file  = [file for file in official if "ARG" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_)
+
+        # Create variables
+        file['isoalpha3'] = "ARG"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.establecimiento_id
+        file['amenity']   = "hospital"
+        file['name']      = file.establecimiento_nombre
+        file['lat']       = file.y
+        file['lon']       = file.x
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
+        # Brazil 
+        #--------------------------------------------------------
+        # Import data
+        file  = [file for file in official if "BRA" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_, sep = ";", encoding = "unicode_escape")
+
+        # Create variables
+        file['isoalpha3'] = "BRA"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.CO_CNES
+        file['amenity']   = "hospital"
+        file['name']      = file.NO_FANTASIA
+        file['lat']       = file.NU_LATITUDE
+        file['lon']       = file.NU_LONGITUDE
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+
+        # Ecuador
+        #--------------------------------------------------------
+        # Import data
+        file  = [file for file in official if "ECU" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_)
+
+        # Create variables
+        file['isoalpha3'] = "BRA"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.unicodigo
+        file['amenity']   = "hospital"
+        file['name']      = file["nombre oficial"]
+        file['lat']       = file.y
+        file['lon']       = file.x
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
+        # Guyana
+        #--------------------------------------------------------
+        # Import data
+            # Define inputs
+        file  = [file for file in official if "GUY" in file][0]
+        path_ = f"{path}/{file}"
+        obj   = s3.get_object(Bucket = sclbucket, Key = path_)
+
+            # Read data
+        excel_data = obj['Body'].read()
+        excel_file = io.BytesIO(excel_data)
+        file       = pd.read_excel(excel_file, engine = 'openpyxl')
+
+        # Create variables
+        file['isoalpha3'] = "GUY"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = np.nan
+        file['amenity']   = file["Facility Type"]
+        file['name']      = file.Name
+        file['lat']       = file[" latitude"]
+        file['lon']       = file[" longitude"]
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
         # Jamaica 
         #--------------------------------------------------------
         # Import data
@@ -328,6 +440,34 @@ def get_amenity_official(amenity, official):
         file['name']      = file[['H_Name','Parish']].apply(lambda x : '{} in {}'.format(x[0],x[1]), axis = 1)
         file['lat']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[1])
         file['lon']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[0])
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
+        # Mexico 
+        #--------------------------------------------------------
+        # Import data
+            # Define inputs
+        file  = [file for file in official if "MEX" in file][0]
+        path_ = f"{path}/{file}"
+        obj   = s3.get_object(Bucket = sclbucket, Key = path_)
+
+            # Read data
+        excel_data = obj['Body'].read()
+        excel_file = io.BytesIO(excel_data)
+        file       = pd.read_excel(excel_file, engine = 'openpyxl')
+
+        # Create variables
+        file['isoalpha3'] = "MEX"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.ID
+        file['amenity']   = file["NOMBRE TIPO ESTABLECIMIENTO"].str.replace("DE ","")
+        file['name']      = file["NOMBRE DE LA UNIDAD"]
+        file['lat']       = file["LATITUD"]
+        file['lon']       = file["LONGITUD"]
 
         # Keep variables of interest
         file = file[file.columns[-7::]]
@@ -705,3 +845,94 @@ def get_coverage(code, amenity, profile, minute, group = "total_population"):
     h3_coverage = h3_coverage.set_geometry(col = 'geometry')
     
     return adm2_coverage, h3_coverage  
+
+
+# Connectivity
+# Code by Maria Reyes based on Ookla's Github repository tutorials
+# https://github.com/teamookla/ookla-open-data/blob/master/tutorials
+#-------------------------------------------------------------------------------#
+
+def quarter_start(year: int, q: int) -> datetime:
+    """
+    calculates the datetime representing the start of a quarter
+
+    Parameters
+    ----------
+    year : int
+        year
+    q : int
+        quarter
+
+    Returns
+    ----------
+    datetime
+        datetime object representing the start of a quarter
+    """
+    
+    if not 1 <= q <= 4:
+        raise ValueError("Quarter must be within [1, 2, 3, 4]")
+
+    month = [1, 4, 7, 10]
+    return datetime(year, month[q - 1], 1)
+
+
+def get_tile_url(service: str, year: int, q: int) -> str:
+    """
+    returns the URL of a tile
+
+    Parameters
+    ----------
+    service_type : ste
+        type of the service - fixed or mobile
+    year : int
+        year
+    q : int
+        quarter
+
+    Returns
+    ----------
+    str
+        URL of a tile
+    """
+   
+    dt = quarter_start(year, q)
+
+    base_url = "https://ookla-open-data.s3-us-west-2.amazonaws.com/shapefiles/performance"
+    url      = f"{base_url}/type%3D{service}/year%3D{dt:%Y}/quarter%3D{q}/{dt:%Y-%m-%d}_performance_{service}_tiles.zip"
+    
+    return url 
+
+def calculate_stats(data, group_fields):
+    """
+    calculates weighted average of the download and upload speeds and total tests
+
+    Parameters
+    ----------
+    data : GeoDataFrame) 
+        geo pandas dataframe to analyze
+    group_fields : list
+        list of fields to group by
+
+    Returns
+    ----------
+    geopandas.GeoDataFrame
+        GeoDataFrame with the calculated stats
+    """
+    
+    return (
+        data.groupby(group_fields)
+        .apply(
+            lambda x: pd.Series(
+                {"avg_d_mbps_wt": np.average(x["avg_d_mbps"], weights=x["tests"]),
+                "avg_u_mbps_wt": np.average(x["avg_u_mbps"], weights=x["tests"])
+                }
+            )
+        )
+        .reset_index()
+        .merge(
+            data.groupby(group_fields)
+            .agg(tests=("tests", "sum"))
+            .reset_index(),
+            on=group_fields,
+        )
+    )
