@@ -27,7 +27,7 @@ from shapely.geometry import Polygon
 from h3 import geo_to_h3, h3_to_geo_boundary
 
 # Working environments
-dotenv.load_dotenv()
+dotenv.load_dotenv("/home/ec2-user/SageMaker/.env")
 sclbucket   = os.environ.get("sclbucket")
 scldatalake = os.environ.get("scldatalake")
 
@@ -121,10 +121,17 @@ def get_country_shp(code = "", level = 0):
     
     # Import data
     path = scldatalake + file
-    shp  = gpd.read_file(path)
+    shp  = gpd.read_file(path) 
+    
+    # Adjust country codes 
+    if level == 1:
+        shp.ADM0_PCODE = shp.ADM0_PCODE.replace({'BZ':'BLZ','BO':'BOL','BR':'BRA','BB':'BRB','CL':'CHL',
+                                                 'CO':'COL','CR':'CRI','DO':'DOM','EC':'ECU','GT':'GTM',
+                                                 'GY':'GUY','HN':'HND','HT':'HTI','MX':'MEX','NI':'NIC',
+                                                 'PA':'PAN','PE':'PER','PY':'PRY','SV':'SLV','SR':'SUR',
+                                                 'TT':'TTO','UY':'URY','VE':'VEN'})
     
     return shp
-
 
 # Extract HTML code / information from HDX website
 #-------------------------------------------------------------------------------#
@@ -383,13 +390,35 @@ def get_amenity_official(amenity, official):
         file  = pd.read_csv(path_)
 
         # Create variables
-        file['isoalpha3'] = "BRA"
+        file['isoalpha3'] = "ECU"
         file['source']    = "Ministry of Health"
         file['source_id'] = file.unicodigo
         file['amenity']   = "hospital"
         file['name']      = file["nombre oficial"]
         file['lat']       = file.y
         file['lon']       = file.x
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
+        # Guatemala
+        #--------------------------------------------------------
+        # Import data 
+        file  = [file for file in official if "GTM" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_)
+
+        # Create variables
+        file['isoalpha3'] = "GTM"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.gid
+        file['amenity']   = file.tipo_serv
+        file['name']      = file.servicio
+        file['lat']       = file.lat
+        file['lon']       = file.lon
 
         # Keep variables of interest
         file = file[file.columns[-7::]]
@@ -418,6 +447,31 @@ def get_amenity_official(amenity, official):
         file['name']      = file.Name
         file['lat']       = file[" latitude"]
         file['lon']       = file[" longitude"]
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+
+        # Honduras
+        #--------------------------------------------------------        
+        # Import data 
+        file       = [file for file in official if "HND" in file][0]
+        path_      = f"{path}/{file}"
+        obj        = s3.get_object(Bucket = sclbucket, Key = path_)
+        excel_data = obj['Body'].read()
+        excel_file = io.BytesIO(excel_data)
+        file       = pd.read_excel(excel_file, engine = 'openpyxl', sheet_name = "coordenadas")
+        
+        # Create variables
+        file['isoalpha3'] = "HND"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.codigo
+        file['amenity']   = np.nan
+        file['name']      = file["Nombre US"]
+        file['lat']       = file.lat
+        file['lon']       = file.lon
 
         # Keep variables of interest
         file = file[file.columns[-7::]]
@@ -536,7 +590,7 @@ def get_amenity_official(amenity, official):
 
 # Get infrastructure from official and public records
 #-------------------------------------------------------------------------------#
-def get_amenity(amenity):
+def get_amenity(amenity, group):
     """
     gets the infrastructure data based on official and public records
     
@@ -546,6 +600,11 @@ def get_amenity(amenity):
         string with amenity name, including:
             financial
             healthcare
+    
+    group : str
+        string wtth data group name, including:
+            official
+            public
     
     Returns
     ----------
@@ -574,61 +633,63 @@ def get_amenity(amenity):
     infrastructure = []
     name           = []
     
-    # Process official records 
-    if len(official) > 0:
-        infrastructure.append(get_amenity_official(amenity, official))
+    # Select group of interest 
+    if group == "official":
+        # Process official records 
+        if len(official) > 0:
+            infrastructure = get_amenity_official(amenity, official)
+        else:
+            print(f"No official records for {amenity} infrastructure")
+            
+    elif group == "public":    
+        # Process public records
+        # Records different from OSM
+        file = [file for file in public if "OSM" not in file]
+        if len(file) > 0:
+            # Import data
+            file  = file[0]
+            path_ = f"{scldatalake}{path}/{file}"
+            file  = pd.read_csv(path_)
+
+            # Keep rows of interest
+            file = file[~file.isoalpha3.isin(name)]
+            file = file[~file.isoalpha3.isna()]
+
+            # Keep variables of interest
+            file = file.drop(columns = "geometry")
+
+            # Add to master tables
+            infrastructure.append(file)
+
+            # Identify healthsites country names
+            name =  pd.concat(infrastructure).isoalpha3.unique().tolist()
         
-        # Identify country names with official records
-        name = pd.concat(infrastructure).isoalpha3.unique().tolist()
-    
-    # Process public records
-    # Records different from OSM
-    file = [file for file in public if "OSM" not in file]
-    if len(file) > 0:
+        # OSM records
         # Import data
-        file  = file[0]
-        path_ = f"{scldatalake}{path}/{file}"
-        file  = pd.read_csv(path_)
+        file_  = [file for file in public if "OSM" in file]
+        for file in file_:
+            path_ = f"{scldatalake}{path}/{file}"
+            file  = pd.read_csv(path_, low_memory = False)
 
-        # Keep rows of interest
-        file = file[~file.isoalpha3.isin(name)]
-        file = file[~file.isoalpha3.isna()]
+            # Keep IADB countries
+            file = file[file.isoalpha3.isin(data.isoalpha3.unique())]
 
-        # Keep variables of interest
-        file = file.drop(columns = "geometry")
-        
-        # Add to master tables
-        infrastructure.append(file)
-        
-        # Identify healthsites country names
-        name =  pd.concat(infrastructure).isoalpha3.unique().tolist()
-    
-    # OSM records
-    # Import data
-    file_  = [file for file in public if "OSM" in file]
-    for file in file_:
-        path_ = f"{scldatalake}{path}/{file}"
-        file  = pd.read_csv(path_, low_memory = False)
+            # Keeps countries without healthsites.io records
+            file = file[~file.isoalpha3.isin(name)]
 
-        # Keep IADB countries
-        file = file[file.isoalpha3.isin(data.isoalpha3.unique())]
+            # Create variables
+            file['source']    = "OSM"
+            file['source_id'] = file.id
 
-        # Keeps countries without official or healthsites.io records
-        file = file[~file.isoalpha3.isin(name)]
+            # Keep variables of interest
+            file = file[['isoalpha3','source','source_id','amenity','name','lat','lon']]
 
-        # Create variables
-        file['source']    = "OSM"
-        file['source_id'] = file.id
+            # Add to master table
+            infrastructure.append(file)
 
-        # Keep variables of interest
-        file = file[['isoalpha3','source','source_id','amenity','name','lat','lon']]
-
-        # Add to master table
-        infrastructure.append(file)
-    
-    # Generate master table 
-    infrastructure = pd.concat(infrastructure)
-    infrastructure = infrastructure.reset_index(drop = True)
+        # Generate master table 
+        infrastructure = pd.concat(infrastructure)
+        infrastructure = infrastructure.reset_index(drop = True)
     
     return infrastructure
 
