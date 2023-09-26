@@ -1,6 +1,9 @@
 """
 individual modules for geospatial analysis
-includes multiple functions that eventualy should be in individual .py modules 
+includes multiple functions
+TODO: 
+    split based on topics and create classes when needed 
+    update paths once AWS connection is fix
 
 Author : Laura Goyeneche, Consultant SPH, lauragoy@iadb.org
 Created: April 05, 2023 
@@ -124,12 +127,9 @@ def get_country_shp(code = "", level = 0):
     shp  = gpd.read_file(path) 
     
     # Adjust country codes 
-    if level == 1:
-        shp.ADM0_PCODE = shp.ADM0_PCODE.replace({'BZ':'BLZ','BO':'BOL','BR':'BRA','BB':'BRB','CL':'CHL',
-                                                 'CO':'COL','CR':'CRI','DO':'DOM','EC':'ECU','GT':'GTM',
-                                                 'GY':'GUY','HN':'HND','HT':'HTI','MX':'MEX','NI':'NIC',
-                                                 'PA':'PAN','PE':'PER','PY':'PRY','SV':'SLV','SR':'SUR',
-                                                 'TT':'TTO','UY':'URY','VE':'VEN'})
+    shp.ADM0_PCODE = shp.ADM0_PCODE.replace({'BZ':'BLZ','BO':'BOL','BR':'BRA','BB':'BRB','CL':'CHL','CO':'COL','CR':'CRI','DO':'DOM','EC':'ECU',
+                                             'GT':'GTM','GY':'GUY','HN':'HND','HT':'HTI','MX':'MEX','NI':'NIC','PA':'PAN','PE':'PER','PY':'PRY',
+                                             'SV':'SLV','SR':'SUR','TT':'TTO','UY':'URY','VE':'VEN'})
     
     return shp
 
@@ -600,7 +600,6 @@ def get_amenity(amenity, group):
         string with amenity name, including:
             financial
             healthcare
-    
     group : str
         string wtth data group name, including:
             official
@@ -741,7 +740,7 @@ def get_isochrone(lon, lat, minute, profile, generalize = 500):
 
 # Get multipolygon with isochrones by country
 #-------------------------------------------------------------------------------#
-def get_isochrones_country(code, amenity, minute, profile):
+def get_isochrones_country(code, amenity, minute, profile, group):
     """
     calculates the isochrones per country based on mapbox API
     for more detail on the API options, refer to the following link:
@@ -762,7 +761,11 @@ def get_isochrones_country(code, amenity, minute, profile):
             walking
             cycling
             driving
-    
+    group : str
+        string wtth data group name, including:
+            official
+            public
+            
     Returns
     ----------
     geopandas.GeoDataFrame
@@ -771,8 +774,8 @@ def get_isochrones_country(code, amenity, minute, profile):
     
     # Infrastructure data
     # TODO: path must be updated with Data Lake path
-    path = f"../data/0-raw/infrastructure/{amenity}_facilities.csv"
-    data = pd.read_csv(path)
+    path = f"../data/0-raw/infrastructure/{amenity}_facilities_{group}.csv"
+    data = pd.read_csv(path, low_memory = False)
     data = data[data.isoalpha3 == code]
     data = data[~data.lat.isna()]
     
@@ -783,9 +786,6 @@ def get_isochrones_country(code, amenity, minute, profile):
         shp_            = get_isochrone(x, y, minute, profile)
         shp_['amenity'] = name
         isochrones.append(shp_)
-
-        # Set time 
-        time.sleep(1)
             
     # Master table 
     isochrones = pd.concat(isochrones)
@@ -910,7 +910,7 @@ def get_coverage(code, amenity, profile, minute, group = "total_population"):
 
 # Connectivity
 # Code by Maria Reyes based on Ookla's Github repository tutorials
-# https://github.com/teamookla/ookla-open-data/blob/master/tutorials
+# Source: https://github.com/teamookla/ookla-open-data/blob/master/tutorials
 #-------------------------------------------------------------------------------#
 
 def quarter_start(year: int, q: int) -> datetime:
