@@ -584,6 +584,13 @@ def get_amenity_official(amenity, official):
         # Generate master table 
         infrastructure = pd.concat(infrastructure)
         infrastructure = infrastructure.reset_index(drop = True)
+        
+        # Convert lat-lon to numeric
+        infrastructure.lat = infrastructure.lat.apply(pd.to_numeric, errors = 'coerce', downcast = 'float')
+        infrastructure.lon = infrastructure.lon.apply(pd.to_numeric, errors = 'coerce', downcast = 'float')
+        
+        # Remove NAs
+        infrastructure = infrastructure[~infrastructure.lat.isna()] 
     
     return infrastructure
 
@@ -795,7 +802,7 @@ def get_isochrones_country(code, amenity, minute, profile, group):
 
 # Get coverage by ADMIN-2 level and H3 cell
 #-------------------------------------------------------------------------------#
-def get_coverage(code, amenity, profile, minute, group = "total_population"):
+def get_coverage(code, amenity, profile, minute, group, popgroup = "total_population"):
     """
     calculates the coverage percentage per country by admin-2 level and H3 cell (resolution 3)
     
@@ -814,7 +821,7 @@ def get_coverage(code, amenity, profile, minute, group = "total_population"):
             driving
      minute : int 
         distance in minutes from facility 
-    group: str
+    popgroup: str
         population group (default is `total_population`), including:
             total_population
             women
@@ -823,6 +830,10 @@ def get_coverage(code, amenity, profile, minute, group = "total_population"):
             youth_15_24
             elderly_60_plus
             women_of_reproductive_age_15_49
+    group : str
+        string wtth data group name, including:
+            official
+            public
     
     Returns
     ----------
@@ -840,8 +851,8 @@ def get_coverage(code, amenity, profile, minute, group = "total_population"):
         adm2_shp = get_country_shp(code, level = 2)
     
         # Population and isochrones
-    isochrone  = gpd.read_file(f"../data/1-isochrones/{amenity}/{code}-{profile}-{minute}.geojson")
-    population = pd.read_csv(f"../data/0-raw/population/{group}/{code}_{group}.csv.gz")
+    isochrone  = gpd.read_file(f"../data/1-isochrones/{amenity}/{group}/{minute}-min/{code}-{profile}-{minute}.geojson")
+    population = pd.read_csv(f"../data/0-raw/population/{popgroup}/{code}_{popgroup}.csv.gz")
     geometry   = gpd.points_from_xy(population['longitude'], population['latitude'])
     population = gpd.GeoDataFrame(population.copy(), geometry = geometry, crs = 4326)
     
