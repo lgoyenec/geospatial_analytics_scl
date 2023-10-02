@@ -344,12 +344,15 @@ def get_amenity_official(amenity, official):
         file  = [file for file in official if "ARG" in file][0]
         path_ = f"{scldatalake}{path}/{file}"
         file  = pd.read_csv(path_)
+        
+        # Filter amenities
+        file = file[~file.tipologia_id.isin([53,80])]
 
         # Create variables
         file['isoalpha3'] = "ARG"
         file['source']    = "Ministry of Health"
         file['source_id'] = file.establecimiento_id
-        file['amenity']   = "hospital"
+        file['amenity']   = file.tipologia_sigla
         file['name']      = file.establecimiento_nombre
         file['lat']       = file.y
         file['lon']       = file.x
@@ -366,12 +369,38 @@ def get_amenity_official(amenity, official):
         file  = [file for file in official if "BRA" in file][0]
         path_ = f"{scldatalake}{path}/{file}"
         file  = pd.read_csv(path_, sep = ";", encoding = "unicode_escape")
-
+        
+        # Filter amenities
+        file = file[file.TP_UNIDADE.isin([1,2,4,5,7,15,21,36,61,62,67,69,70,76,80,81,82,85])]
+        
+        # Amenities name 
+        UNID_NAME = {1 :"Posto de Saude",
+                     2 :"Centro de Saude/Unidade Basica",
+                     4 :"Policlinica",
+                     5 :"Hospital Geral",
+                     7 :"Hospital Especializado",
+                     15:"Unidade Mista",
+                     21:"Pronto Socorro Especializado",
+                     36:"Clinica/Centro de Especialidade",
+                     61:"Centro de Parto Normal - Isolado",
+                     62:"Hospital/Dia - Isolado",
+                     67:"Laboratorio Central de Saude Publica - Lacen",
+                     69:"Centro de Atencao Hemoterapica E Ou Hematologica",
+                     70:"Centro de Atencao Psicossocial",
+                     76:"Central de Regulacao Medica Das Urgencias",
+                     80:"Laboratorio de Saude Publica",
+                     81:"Central de Regulacao Do Acesso",
+                     82:"Central de Notificacao,Captacao E Distrib de Orgaos Estadual",
+                     85:"Centro de Imunizacao"}
+        
+        # Replace codes with unit name
+        file.TP_UNIDADE = file.TP_UNIDADE.replace(UNID_NAME)
+        
         # Create variables
         file['isoalpha3'] = "BRA"
         file['source']    = "Ministry of Health"
         file['source_id'] = file.CO_CNES
-        file['amenity']   = "hospital"
+        file['amenity']   = file.TP_UNIDADE
         file['name']      = file.NO_FANTASIA
         file['lat']       = file.NU_LATITUDE
         file['lon']       = file.NU_LONGITUDE
@@ -388,12 +417,15 @@ def get_amenity_official(amenity, official):
         file  = [file for file in official if "ECU" in file][0]
         path_ = f"{scldatalake}{path}/{file}"
         file  = pd.read_csv(path_)
-
+        
+        # Filter amenities
+        file = file[file["nivel de atencion"].isin(["NIVEL 1","NIVEL 2","NIVEL 3"])]
+        
         # Create variables
         file['isoalpha3'] = "ECU"
         file['source']    = "Ministry of Health"
         file['source_id'] = file.unicodigo
-        file['amenity']   = "hospital"
+        file['amenity']   = file.tipologia
         file['name']      = file["nombre oficial"]
         file['lat']       = file.y
         file['lon']       = file.x
@@ -410,7 +442,18 @@ def get_amenity_official(amenity, official):
         file  = [file for file in official if "GTM" in file][0]
         path_ = f"{scldatalake}{path}/{file}"
         file  = pd.read_csv(path_)
-
+        
+        # Filter amenities 
+        tipo_serv = ["CENTRO CONVERGENCIA",
+                     "PUESTO DE SALUD",
+                     "CENTRO DE SALUD",
+                     "HOSPITAL",
+                     "CENTRO ATENCION PERMANEN*",
+                     "UNIDAD TECNICA SALUD",
+                     "CENTRO URGENCIAS MEDICAS",
+                     "UNIDAD 24 HORAS"]
+        file = file[file.tipo_serv.isin(tipo_serv)]
+        
         # Create variables
         file['isoalpha3'] = "GTM"
         file['source']    = "Ministry of Health"
@@ -492,8 +535,8 @@ def get_amenity_official(amenity, official):
         file['source_id'] = np.nan
         file['amenity']   = file.Type.str.lower()
         file['name']      = file[['H_Name','Parish']].apply(lambda x : '{} in {}'.format(x[0],x[1]), axis = 1)
-        file['lat']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[1])
-        file['lon']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[0])
+        file['lat']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[1]).astype(float)
+        file['lon']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[0]).astype(float) * -1
 
         # Keep variables of interest
         file = file[file.columns[-7::]]
@@ -513,6 +556,10 @@ def get_amenity_official(amenity, official):
         excel_data = obj['Body'].read()
         excel_file = io.BytesIO(excel_data)
         file       = pd.read_excel(excel_file, engine = 'openpyxl')
+        
+        # Filter amenities 
+        clave = ["CAF","99","W","F","OFI","ALM","BS","X","ANT","NES","UM","HM","OTR","UM TEMPORAL COVID","OTCE","BS","MR","NA","P","PERICIALES"]
+        file  = file[~file["CLAVE DE TIPOLOGIA"].isin(clave)]
 
         # Create variables
         file['isoalpha3'] = "MEX"
