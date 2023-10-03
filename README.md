@@ -37,6 +37,7 @@ The previous notebooks show examples of how to conduct the analysis described. H
 ## Author(s)
 [Laura Goyeneche](https://github.com/lgoyenec), Social Data Consultant, Inter-American Development Bank
 
-> Citation: Inter-American Development Bank (year of consultation), Geospatial analysis in Latin America and the Caribbean
+#### How to cite this repository?
+> "Source: Inter-American Development Bank (year of consultation), Geospatial analysis in Latin America and the Caribbean"
 
 > All rights concerning the public datasets used from Meta, HDX, OpenStreetMaps and healthsites.io belong to its owners. 
