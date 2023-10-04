@@ -48,7 +48,7 @@ The previous notebooks show examples of how to conduct the analysis described. H
 
 > Isochrones: [Development Data Partnership/Mapbox](https://scldata.iadb.org/app/folder/9A16C68B-58F7-4260-B9E0-71AAC96AA523)
 
-> Coverage: Coverage: [Development Data Partnership/Mapbox](https://scldata.iadb.org/app/folder/0A0D8DD8-70B2-44AD-B75F-02E5B766C454)
+> Coverage: [Development Data Partnership/Mapbox](https://scldata.iadb.org/app/folder/0A0D8DD8-70B2-44AD-B75F-02E5B766C454)
 
 ## Author(s)
 [Laura Goyeneche](https://github.com/lgoyenec), Social Data Consultant, Inter-American Development Bank
