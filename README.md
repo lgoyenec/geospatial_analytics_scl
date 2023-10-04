@@ -3,7 +3,9 @@
 ## Index: 
 - [Description](#description)
 - [Structure](#structure)
+- [Data source](#data-source)
 - [Author(s)](#authors)
+- [Citation](#citation)
 
 ## Description 
 This repository contains a comprehensive collection of code for preprocessing geospatial data in Latin America and the Caribbean (LAC). The repository aims to facilitate data analysis and exploration by providing code examples and modules (.py) for obtaining various datasets related to the region's population, administrative boundaries, social infrastructure, and more. This repository's **main objective** is to create a centralized and continuously updated resource for preprocessing and analyzing geospatial data in the region. By fostering collaboration and knowledge sharing, the repository aims to support research, analysts, and policymakers in conducting in-depth geospatial analysis and generating valuable insights for the region. 
@@ -33,11 +35,24 @@ The repository offers a range of code examples and modules to assist users in co
 
 The previous notebooks show examples of how to conduct the analysis described. However, a series of modules (.py functions) are provided in [utils.py](https://github.com/BID-DATA/geospatial_analytics_scl/blob/main/source/utils.py) to facilitate analysis for all countries in the region. These modules can process the collected data and generate output files in GeoJSON format, maps, and other relevant visualizations. Users can leverage these modules to perform a variety of analyses, including spatial aggregation, statistical calculations, and mapping. [run.ipynb](https://github.com/BID-DATA/geospatial_analytics_scl/blob/main/source/run.ipynb) presents a step-by-step to use these modules. 
 
+## Data source
+> Population: [Development Data Partnership/Facebook - High resolution population density map](https://scldata.iadb.org/app/folder/A674F395-DAF5-4E98-B132-B6F7E07ADC64)
+
+> Financial infrastructure: [Geospatial infrastructure/Financial Facilities](https://scldata.iadb.org/app/folder/C18ACCEE-04FC-4CA5-A034-4B9BA7FE2952)
+
+> Healthcare infrastructure: [Geospatial infrastructure/Healthcare Facilities](https://scldata.iadb.org/app/folder/874B76A4-5B3C-467C-A31F-A0D9FA9B1F01)
+
+> Isochrones:
+
+> Coverage:
 
 ## Author(s)
 [Laura Goyeneche](https://github.com/lgoyenec), Social Data Consultant, Inter-American Development Bank
 
-#### How to cite this repository?
-> "Source: Inter-American Development Bank (year of consultation), Geospatial analysis in Latin America and the Caribbean"
+## Citation
+> "Source: Inter-American Development Bank (year of consultation), Geospatial analysis in Latin America and the Caribbean". We suggest to reference the date on which the databases were consulted, as the information contained in them may change. Likewise, we appreciate a copy of the publications or reports that use the information contained in this database for our records.
 
-> All rights concerning the public datasets used from Meta, HDX, OpenStreetMaps and healthsites.io belong to its owners. 
+> All rights concerning the public datasets used from Meta, HDX, OpenStreetMaps and healthsites.io belong to its owners.
+
+## Limitation of responsibilities
+The IDB is not responsible, under any circumstance, for damage or compensation, moral or patrimonial; direct or indirect; accessory or special; or by way of consequence, foreseen or unforeseen, that could arise: (i) under any concept of intellectual property, negligence or detriment of another part theory; (ii) following the use of the digital tool, including, but not limited to defects in the Digital Tool, or the loss or inaccuracy of data of any kind. The foregoing includes expenses or damages associated with communication failures and / or malfunctions of computers, linked to the use of the digital tool.
