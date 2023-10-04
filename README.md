@@ -18,7 +18,7 @@ This repository includes scripts and instructions for obtaining the following da
 
 4. Health infrastructure includes hospitals, clinics, and more from [healthsites.io](https://healthsites.io/). 
 
-5. Official data on social infrastructure shared by the countries in the region. The structure of these datasets varies across countries.
+5. Official data on social infrastructure shared by the countries in the region. The structure of these datasets varies across countries. For more details on official data, visit SCL Data Lake, resource [Healthcare Facilities](https://scldata.iadb.org/app/folder/BF7AF50E-3BC0-479D-9B51-79A1F692F0F5).
 
 6. Connectivty data from [Ookla's Open Data Initiative](https://github.com/teamookla/ookla-open-data)
 
