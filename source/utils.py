@@ -16,6 +16,7 @@ import io
 import os 
 import re
 import time
+import fiona
 import boto3
 import dotenv
 import requests
@@ -127,9 +128,12 @@ def get_country_shp(code = "", level = 0):
     shp  = gpd.read_file(path) 
     
     # Adjust country codes 
-    shp.ADM0_PCODE = shp.ADM0_PCODE.replace({'BZ':'BLZ','BO':'BOL','BR':'BRA','BB':'BRB','CL':'CHL','CO':'COL','CR':'CRI','DO':'DOM','EC':'ECU',
-                                             'GT':'GTM','GY':'GUY','HN':'HND','HT':'HTI','MX':'MEX','NI':'NIC','PA':'PAN','PE':'PER','PY':'PRY',
-                                             'SV':'SLV','SR':'SUR','TT':'TTO','UY':'URY','VE':'VEN'})
+    shp.ADM0_PCODE = shp.ADM0_PCODE.replace({'BZ':'BLZ','BO':'BOL','BR':'BRA','BB':'BRB',
+                                             'CL':'CHL','CO':'COL','CR':'CRI','DO':'DOM',
+                                             'EC':'ECU','GT':'GTM','GY':'GUY','HN':'HND',
+                                             'HT':'HTI','MX':'MEX','NI':'NIC','PA':'PAN',
+                                             'PE':'PER','PY':'PRY','SV':'SLV','SR':'SUR',
+                                             'TT':'TTO','UY':'URY','VE':'VEN'})
     
     return shp
 
@@ -898,7 +902,8 @@ def get_coverage(code, amenity, profile, minute, group, popgroup = "total_popula
         adm2_shp = get_country_shp(code, level = 2)
     
         # Population and isochrones
-    isochrone  = gpd.read_file(f"../data/1-isochrones/{amenity}/{group}/{minute}-min/{code}-{profile}-{minute}.geojson")
+    with fiona.Env(OGR_GEOJSON_MAX_OBJ_SIZE = 2000):  
+        isochrone  = gpd.read_file(f"../data/1-isochrones/{amenity}/{group}/{minute}-min/{code}-{profile}-{minute}.geojson")
     population = pd.read_csv(f"../data/0-raw/population/{popgroup}/{code}_{popgroup}.csv.gz")
     geometry   = gpd.points_from_xy(population['longitude'], population['latitude'])
     population = gpd.GeoDataFrame(population.copy(), geometry = geometry, crs = 4326)
