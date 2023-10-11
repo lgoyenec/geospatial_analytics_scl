@@ -20,7 +20,7 @@ This repository includes scripts and instructions for obtaining the following da
 
 4. Health infrastructure includes hospitals, clinics, and more from [healthsites.io](https://healthsites.io/). 
 
-5. Official data on social infrastructure shared by the countries in the region. The structure of these datasets varies across countries. Right now we have official records for Argentina, Brasil, Ecuador, El Salvador, Guatemala, Guyana, Honduras, Jamaica, Mexico, and Peru. For further details about data source, please refer to the [documentation](https://scldata.iadb.org/app/folder/874B76A4-5B3C-467C-A31F-A0D9FA9B1F01#tab-documentation).
+5. Official data on social infrastructure is shared by the countries in the region. The structure of these datasets varies across countries. Right now we have official records for Argentina, Brazil, Ecuador, El Salvador, Guatemala, Guyana, Honduras, Jamaica, Mexico, and Peru. For further details about the data sources, please refer to the [documentation](https://scldata.iadb.org/app/folder/874B76A4-5B3C-467C-A31F-A0D9FA9B1F01#tab-documentation).
 
 6. Connectivty data from [Ookla's Open Data Initiative](https://github.com/teamookla/ookla-open-data)
 
