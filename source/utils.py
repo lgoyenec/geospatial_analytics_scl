@@ -1006,7 +1006,7 @@ def get_tile_url(service: str, year: int, q: int) -> str:
 
     Parameters
     ----------
-    service_type : ste
+    service_type : str
         type of the service - fixed or mobile
     year : int
         year
