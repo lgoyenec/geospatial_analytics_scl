@@ -19,10 +19,12 @@ import time
 import fiona
 import boto3
 import dotenv
+import urllib
 import requests
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+from sodapy import Socrata
 from datetime import datetime
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
@@ -303,6 +305,40 @@ def get_population(data, code, group = "total_population"):
     
     return file
 
+# Get coordinates lat-lon for official records with records
+#-------------------------------------------------------------------------------#
+def get_coordinates(address, code):
+    """
+    gets the coordinates for address
+    
+    Parameters
+    ----------
+    address : str
+        address, including, if possible, admin1, admin2 and country name
+    
+    Returns
+    ----------
+    list
+        list of possible coordinates [longitude,latitude]
+    """    
+    # Inputs
+    token   = os.environ.get("access_token_dp")
+    country = get_iadb()
+    country = country[country.isoalpha3 == code].country_name_es.tolist()[0]
+    address = address if country in address else f"{address} {country}"
+    address = urllib.parse.quote(address.encode('utf-8')) 
+    url     = f'https://api.mapbox.com/geocoding/v5/mapbox.places/{address}.json?access_token={token}'
+    
+    # Request
+    try: 
+        response = requests.get(url).json()
+        response = response['features']
+        response = [j for j in response if country in j["place_name"]]
+    except: 
+        response = []
+        
+    return response
+
 
 # Get infrastructure from official records
 #-------------------------------------------------------------------------------#
@@ -375,7 +411,7 @@ def get_amenity_official(amenity, official):
         file  = pd.read_csv(path_, sep = ";", encoding = "unicode_escape")
         
         # Filter amenities
-        file = file[file.TP_UNIDADE.isin([1,2,4,5,7,15,21,36,61,62,67,69,70,76,80,81,82,85])]
+        file = file[file.TP_UNIDADE.isin([1,2,4,5,7,15,20,21,36,61,62,69,70,71,72,73,83,85])]
         
         # Amenities name 
         UNID_NAME = {1 :"Posto de Saude",
@@ -384,17 +420,17 @@ def get_amenity_official(amenity, official):
                      5 :"Hospital Geral",
                      7 :"Hospital Especializado",
                      15:"Unidade Mista",
+                     20:"Pronto Socorro General",
                      21:"Pronto Socorro Especializado",
                      36:"Clinica/Centro de Especialidade",
                      61:"Centro de Parto Normal - Isolado",
                      62:"Hospital/Dia - Isolado",
-                     67:"Laboratorio Central de Saude Publica - Lacen",
                      69:"Centro de Atencao Hemoterapica E Ou Hematologica",
                      70:"Centro de Atencao Psicossocial",
-                     76:"Central de Regulacao Medica Das Urgencias",
-                     80:"Laboratorio de Saude Publica",
-                     81:"Central de Regulacao Do Acesso",
-                     82:"Central de Notificacao,Captacao E Distrib de Orgaos Estadual",
+                     71:"Centro de Apoio a Saude da Familia",
+                     72:"Unidade de Atencao a Saude Indigena",
+                     73:"Pronto Atendimento",
+                     83:"Polo de Prevencao de Doencas e Agravos e Promocao da Saude",
                      85:"Centro de Imunizacao"}
         
         # Replace codes with unit name
@@ -414,7 +450,31 @@ def get_amenity_official(amenity, official):
 
         # Add to master table
         infrastructure.append(file)
+        
+        # Colombia 
+        #--------------------------------------------------------
+        file  = [file for file in official if "COL" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_, encoding = "unicode_escape")
+        
+        # Filter amenities
+        file = file[~file["latitude"].isna()]
+        
+        # Create variables
+        file['isoalpha3'] = "COL"
+        file['source']    = "Ministry of Health - REPS"
+        file['source_id'] = file.codigoprestador
+        file['amenity']   = "IPS"
+        file['name']      = file.nombreprestador
+        file['lat']       = file.latitude
+        file['lon']       = file.longitude
 
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
         # Ecuador
         #--------------------------------------------------------
         # Import data
