@@ -458,7 +458,7 @@ def get_amenity_official(amenity, official):
         file  = pd.read_csv(path_, encoding = "unicode_escape")
         
         # Filter amenities
-        file = file[~file["latitude"].isna()]
+        file = file[~file["latitute"].isna()]
         
         # Create variables
         file['isoalpha3'] = "COL"
@@ -466,7 +466,7 @@ def get_amenity_official(amenity, official):
         file['source_id'] = file.codigoprestador
         file['amenity']   = "IPS"
         file['name']      = file.nombreprestador
-        file['lat']       = file.latitude
+        file['lat']       = file.latitute
         file['lon']       = file.longitude
 
         # Keep variables of interest
