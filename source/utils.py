@@ -462,10 +462,10 @@ def get_amenity_official(amenity, official):
         
         # Create variables
         file['isoalpha3'] = "COL"
-        file['source']    = "Ministry of Health - REPS"
-        file['source_id'] = file.codigoprestador
+        file['source']    = "Ministry of Health REPS"
+        file['source_id'] = file.codigohabilitacionsede
         file['amenity']   = "IPS"
-        file['name']      = file.nombreprestador
+        file['name']      = file.nombresede
         file['lat']       = file.latitute
         file['lon']       = file.longitude
 
@@ -912,6 +912,7 @@ def get_isochrones_country(code, amenity, minute, profile, group):
 
 
 # Get coverage by ADMIN-2 level and H3 cell
+# TODO: Generalize function
 #-------------------------------------------------------------------------------#
 def get_coverage(code, amenity, profile, minute, group, popgroup = "total_population"):
     """
