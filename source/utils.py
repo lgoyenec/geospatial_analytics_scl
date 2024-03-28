@@ -403,6 +403,29 @@ def get_amenity_official(amenity, official):
         # Add to master table
         infrastructure.append(file)
         
+        # Bolivia
+        #--------------------------------------------------------
+        file_ = [file for file in official if ("BOL" in file) and (".shp" in file)]
+        
+        for file in file_:
+            path_ = f"{scldatalake}{path}/{file}"
+            file  = gpd.read_file(path_)
+
+            # Create variables
+            file['isoalpha3'] = "BOL"
+            file['source']    = "Ministry of Health"
+            file['source_id'] = np.nan
+            file['amenity']   = file.CLASE.str.lower()
+            file['name']      = file[['Name','MUNICIPIO','PROVINCIA']].apply(lambda x : '{}, {}, {}'.format(x[0], x[1], x[2]), axis = 1)
+            file['lat']       = file.LATITUD
+            file['lon']       = file.LONGITUD
+
+            # Keep variables of interest
+            file = file[file.columns[-7::]]
+
+            # Add to master table
+            infrastructure.append(file)
+        
         # Brazil 
         #--------------------------------------------------------
         # Import data
@@ -451,6 +474,27 @@ def get_amenity_official(amenity, official):
         # Add to master table
         infrastructure.append(file)
         
+        # Chile
+        #--------------------------------------------------------
+        file  = [file for file in official if ("CHL" in file) and (".shp" in file)][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = gpd.read_file(path_)
+        
+        # Create variables
+        file['isoalpha3'] = "CHL"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.C_VIG
+        file['amenity']   = file.TIPO
+        file['name']      = file.NOMBRE
+        file['lat']       = file.LATITUD
+        file['lon']       = file.LONGITUD
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
         # Colombia 
         #--------------------------------------------------------
         file  = [file for file in official if "COL" in file][0]
@@ -468,6 +512,27 @@ def get_amenity_official(amenity, official):
         file['name']      = file.nombresede
         file['lat']       = file.latitute
         file['lon']       = file.longitude
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
+        # Dominican Republic
+        #--------------------------------------------------------
+        file  = [file for file in official if "DOM" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_, sep = ";", encoding = "latin1")
+        
+         # Create variables
+        file['isoalpha3'] = "DOM"
+        file['source']    = "Ministry of Health"
+        file['source_id'] = file.ID_CENTRO
+        file['amenity']   = file["TIPO DE CENTRO"]
+        file['name']      = file[['NOMBRE DEL ESTABLECIMIENTO','MUNICIPIO','PROVINCIA']].apply(lambda x : '{}, {}, {}'.format(x[0], x[1], x[2]), axis = 1)
+        file['lat']       = file.COORDENADAS.str.split(',', expand = True)[0]
+        file['lon']       = file.COORDENADAS.str.split(',', expand = True)[1]
 
         # Keep variables of interest
         file = file[file.columns[-7::]]
@@ -554,6 +619,27 @@ def get_amenity_official(amenity, official):
         file['name']      = file.Name
         file['lat']       = file[" latitude"]
         file['lon']       = file[" longitude"]
+
+        # Keep variables of interest
+        file = file[file.columns[-7::]]
+
+        # Add to master table
+        infrastructure.append(file)
+        
+        # Haiti
+        #--------------------------------------------------------
+        file  = [file for file in official if "HTI" in file][0]
+        path_ = f"{scldatalake}{path}/{file}"
+        file  = pd.read_csv(path_)
+        
+        # Create variables
+        file['isoalpha3'] = "HTI"
+        file['source']    = file.SourceHosp
+        file['source_id'] = file.HealthC_ID
+        file['amenity']   = file.Categorie
+        file['name']      = file[['NomInstitu','Commune','DistrictNo']].apply(lambda x : '{}, {}, {}'.format(x[0], x[1], x[2]), axis = 1)
+        file['lat']       = file.X_DDS
+        file['lon']       = file.Y_DDS
 
         # Keep variables of interest
         file = file[file.columns[-7::]]
@@ -689,7 +775,31 @@ def get_amenity_official(amenity, official):
 
             # Add to master table
             infrastructure.append(file)
-            
+        
+        # Trinidad and Tobago
+        #--------------------------------------------------------
+        file_ = [file for file in official if ("TTO" in file) and (".shp" in file)]
+        
+        for file in file_:
+            type_ = file.split("/")[-1].split(".")[0]
+            path_ = f"{scldatalake}{path}/{file}"
+            file  = gpd.read_file(path_)
+
+            # Create variables
+            file['isoalpha3'] = "TTO"
+            file['source']    = "Ministry of Health"
+            file['source_id'] = np.nan
+            file['amenity']   = type_
+            file['name']      = file.Name
+            file['lat']       = file['geometry'].y
+            file['lon']       = file['geometry'].x
+
+            # Keep variables of interest
+            file = file[file.columns[-7::]]
+
+            # Add to master table
+            infrastructure.append(file)
+        
         # Master table 
         #--------------------------------------------------------
         # Generate master table 
