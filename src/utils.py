@@ -33,7 +33,7 @@ from shapely.geometry import Polygon
 from h3 import geo_to_h3, h3_to_geo_boundary
 
 # Working environments
-dotenv.load_dotenv("/home/ec2-user/SageMaker/.env")
+dotenv.load_dotenv()
 sclbucket   = os.environ.get("sclbucket")
 scldatalake = os.environ.get("scldatalake")
 
@@ -391,7 +391,7 @@ def get_amenity_official(amenity, official):
         # Create variables
         file['isoalpha3'] = "ARG"
         file['source']    = "Ministry of Health"
-        file['source_id'] = file.establecimiento_id
+        file['source_id'] = ['ARG' + str(i) for i in range(len(file))]
         file['amenity']   = file.tipologia_sigla
         file['name']      = file.establecimiento_nombre
         file['lat']       = file.y
@@ -406,6 +406,7 @@ def get_amenity_official(amenity, official):
         # Bolivia
         #--------------------------------------------------------
         file_ = [file for file in official if ("BOL" in file) and (".shp" in file)]
+        id_n = 0
         
         for file in file_:
             path_ = f"{scldatalake}{path}/{file}"
@@ -414,7 +415,7 @@ def get_amenity_official(amenity, official):
             # Create variables
             file['isoalpha3'] = "BOL"
             file['source']    = "Ministry of Health"
-            file['source_id'] = np.nan
+            file['source_id'] = ['BOL' + str(i) for i in range(id_n, id_n + len(file))]
             file['amenity']   = file.CLASE.str.lower()
             file['name']      = file[['Name','MUNICIPIO','PROVINCIA']].apply(lambda x : '{}, {}, {}'.format(x[0], x[1], x[2]), axis = 1)
             file['lat']       = file.LATITUD
@@ -425,6 +426,7 @@ def get_amenity_official(amenity, official):
 
             # Add to master table
             infrastructure.append(file)
+            id_n += len(file)
         
         # Brazil 
         #--------------------------------------------------------
@@ -528,7 +530,7 @@ def get_amenity_official(amenity, official):
          # Create variables
         file['isoalpha3'] = "DOM"
         file['source']    = "Ministry of Health"
-        file['source_id'] = file.ID_CENTRO
+        file['source_id'] = ['DOM' + str(i) for i in range(len(file))]
         file['amenity']   = file["TIPO DE CENTRO"]
         file['name']      = file[['NOMBRE DEL ESTABLECIMIENTO','MUNICIPIO','PROVINCIA']].apply(lambda x : '{}, {}, {}'.format(x[0], x[1], x[2]), axis = 1)
         file['lat']       = file.COORDENADAS.str.split(',', expand = True)[0]
@@ -614,7 +616,7 @@ def get_amenity_official(amenity, official):
         # Create variables
         file['isoalpha3'] = "GUY"
         file['source']    = "Ministry of Health"
-        file['source_id'] = np.nan
+        file['source_id'] = ['GUY' + str(i) for i in range(len(file))]
         file['amenity']   = file["Facility Type"]
         file['name']      = file.Name
         file['lat']       = file[" latitude"]
@@ -682,7 +684,7 @@ def get_amenity_official(amenity, official):
         # Create variables
         file['isoalpha3'] = "JAM"
         file['source']    = "Ministry of Health"
-        file['source_id'] = np.nan
+        file['source_id'] = ['JAM' + str(i) for i in range(len(file))]
         file['amenity']   = file.Type.str.lower()
         file['name']      = file[['H_Name','Parish']].apply(lambda x : '{} in {}'.format(x[0],x[1]), axis = 1)
         file['lat']       = file.GeoJSON.apply(lambda x: re.findall(r"\d+\.\d+", x)[1]).astype(float)
@@ -757,6 +759,8 @@ def get_amenity_official(amenity, official):
         #--------------------------------------------------------
         # Import data 
         file_ = [file for file in official if "SLV" in file]
+        id_n = 0
+ 
         for file in file_:
             path_ = f"{scldatalake}{path}/{file}"
             file  = pd.read_csv(path_)
@@ -764,7 +768,7 @@ def get_amenity_official(amenity, official):
             # Create variables
             file['isoalpha3'] = "SLV"
             file['source']    = "Ministry of Health"
-            file['source_id'] = np.nan
+            file['source_id'] = ['SLV' + str(i) for i in range(id_n, id_n + len(file))]
             file['amenity']   = file.ESPECIALIZACION.str.lower()
             file['name']      = file[['Name','MUNICIPIO','REGION']].apply(lambda x : '{}, {}, {}'.format(x[0], x[1], x[2]), axis = 1)
             file['lat']       = file.Y
@@ -775,10 +779,12 @@ def get_amenity_official(amenity, official):
 
             # Add to master table
             infrastructure.append(file)
+            id_n += len(file)
         
         # Trinidad and Tobago
         #--------------------------------------------------------
         file_ = [file for file in official if ("TTO" in file) and (".shp" in file)]
+        id_n = 0
         
         for file in file_:
             type_ = file.split("/")[-1].split(".")[0]
@@ -788,7 +794,7 @@ def get_amenity_official(amenity, official):
             # Create variables
             file['isoalpha3'] = "TTO"
             file['source']    = "Ministry of Health"
-            file['source_id'] = np.nan
+            file['source_id'] = ['TTO' + str(i) for i in range(id_n, id_n + len(file))]
             file['amenity']   = type_
             file['name']      = file.Name
             file['lat']       = file['geometry'].y
@@ -799,6 +805,7 @@ def get_amenity_official(amenity, official):
 
             # Add to master table
             infrastructure.append(file)
+            id_n += len(file)
         
         # Master table 
         #--------------------------------------------------------
@@ -812,6 +819,11 @@ def get_amenity_official(amenity, official):
         
         # Remove NAs
         infrastructure = infrastructure[~infrastructure.lat.isna()] 
+        
+        # Add country code to soure_id
+        infrastructure['source_id'] = infrastructure.apply(
+            lambda row: str(row['isoalpha3']) + str(int(row['source_id'])) if re.match(r'^\d', str(row['source_id'])) else row['source_id'], 
+            axis = 1)
     
     return infrastructure
 
