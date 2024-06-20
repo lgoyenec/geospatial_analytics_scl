@@ -51,7 +51,7 @@ def get_iadb():
     
     return data
 
-def get_country_shp():
+def get_country_shp(code = "", level = 0):
     """
     get the country's shapefile at the selected admin level 
     
