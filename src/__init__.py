@@ -45,7 +45,6 @@ from .statistics import calculate_stats
 
 # Working environments
 dotenv.load_dotenv()
-dotenv.load_dotenv("/path/to/your/.env/file")
 sclbucket   = os.environ.get("sclbucket")
 scldatalake = os.environ.get("scldatalake")
 
