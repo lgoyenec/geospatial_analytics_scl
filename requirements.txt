@@ -1,0 +1,14 @@
+boto3
+bs4
+dotenv
+fiona
+geopandas
+h3
+io
+matplotlib
+numpy
+pandas
+requests
+shapely
+sodapy
+urllib
