@@ -30,6 +30,7 @@ from bs4 import BeautifulSoup
 
 # Geospatial 
 import fiona
+import rasterio
 from geopandas.tools import sjoin
 from shapely.geometry import Polygon
 from h3 import geo_to_h3, h3_to_geo_boundary
@@ -38,14 +39,14 @@ from h3 import geo_to_h3, h3_to_geo_boundary
 import matplotlib.pyplot as plt
 
 # Local Application/Library Imports
-from .processing import get_meta_url, get_population, get_amenity_official, get_amenity, get_tile_url
-from .geospatial import get_coordinates, get_isochrone, get_isochrones_country, get_access
-from .utilities  import get_iadb, get_country_shp, quarter_start
-from .statistics import calculate_stats
+from src.processing import *
+from src.geospatial import *
+from src.utilities  import *
+from src.statistics import *
 
 # Working environments
 dotenv.load_dotenv()
-dotenv.load_dotenv("/path/to/your/.env/file")
+dotenv.load_dotenv("/Users/lauragoyeneche/Google Drive/My Drive/02-Work/10-IDB Consultant/1-Social Protection & Health/32-IDB Atlas/src/.env")
 sclbucket   = os.environ.get("sclbucket")
 scldatalake = os.environ.get("scldatalake")
 
@@ -68,5 +69,11 @@ __all__ = [
     'get_amenity',
     'get_access',
     'quarter_start',
-    'calculate_stats'
+    'find_best_match',
+    'calculate_stats',
+    'get_desinventar',
+    'get_emdat',
+    'get_desastres',
+    'normalize_text',
+    'get_metadata'
 ]
