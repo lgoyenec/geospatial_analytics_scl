@@ -5,7 +5,6 @@ Welcome to the Geospatial Analytics SCL repository. This project focuses on prep
 ## Table of Contents
 
 - [Introduction](#introduction)
-- [Features](#features)
 - [Installation](#installation)
 - [Repository structure](#repository-structure)
 - [Data sources](#data-sources)
