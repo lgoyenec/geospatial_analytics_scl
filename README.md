@@ -1,6 +1,3 @@
-# Save the corrected README content to a .md file
-file_path_retry = "/mnt/data/README_Geospatial_Analytics_SCL.md"
-
 # Geospatial Analytics SCL
 
 Welcome to the Geospatial Analytics SCL repository. This project focuses on preprocessing and analyzing geospatial data in Latin America and the Caribbean (LAC), providing tools and resources to facilitate data analysis and exploration.
