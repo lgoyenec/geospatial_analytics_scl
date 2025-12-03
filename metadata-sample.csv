@@ -1,0 +1,20 @@
+Element,Description,Value
+Title,Title of the data layer; should be simple and easy to understand,Sample Urban Infrastructure Data
+Summary,One-line summary of the content of the layer,This layer includes detailed infrastructure data for urban planning.
+Description,"In-depth description, including data processing notes, update cycle, and coverage","This dataset contains information about urban infrastructure including roads, buildings, utilities, and public facilities. It was collected through a combination of satellite imagery and on-site surveys. The data is updated annually to reflect new developments and changes in the infrastructure."
+Tags,"Relevant keywords for search. Avoid repeats from Title, Summary, or Description",urban; infrastructure; planning; roads; buildings; utilities; public facilities
+Category,Select any applicable sub-categories from ATLAS,"SCL; Infrastructure; Vector tiles, Transportation"
+Credits,"Credit to data providers, e.g., WHO, World Bank, ECLAC, others",World Urban Data Organization (WUDO)
+Date of creation,Date when the layer was created,1/15/23
+Date of last update,Date of the most recent update,1/15/24
+Responsible party,Contact information of the person responsible for the layer,Jane Doe (jane.doe@wudo.org)
+Coordinate system,Coordinate system or projection used for the layer,EPSG:3857
+Geographic extent,Geographic coverage; bounding coordinates in latitude and longitude,Lat: -34.0 to -33.0; Lon: 150.0 to 151.0
+Lineage,Origin of the data,"Data compiled from multiple sources including WUDO satellite imagery, local government records, and on-site surveys conducted by WUDO field teams."
+Attribute information,"Attributes description including names, data types, and description","Road_ID: integer, unique identifier for roads; Road_Name: string, name of the road; Road_Type: string, type of road (e.g., highway, street); Building_ID: integer, unique identifier for buildings; Building_Name: string, name of the building; Building_Use: string, primary use of the building (e.g., residential, commercial); Utility_Type: string, type of utility (e.g., water, electricity); Facility_Name: string, name of the public facility; Facility_Type: string, type of public facility (e.g., hospital, school)"
+Feature types,"Feature type, e.g., points, lines, polygons",Points; Lines; Polygons
+Resolution,Spatial resolution of layer,10m
+Update frequency,"How often the layer is updated, e.g., annually, quarterly",Annually
+Usage information,"Information about layer format, accessibility, and usage constraints",Data is available for public use under the Creative Commons Attribution 4.0 International License. Accessible via the WUDO data portal.
+Metadata date,Date when metadata was created or last updated,1/20/24
+Metadata contact,Contact information of the person responsible for the metadata,John Smith (john.smith@wudo.org)
