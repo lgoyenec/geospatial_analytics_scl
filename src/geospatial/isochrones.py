@@ -41,7 +41,7 @@ def get_isochrone(lon, lat, minute, profile, generalize = 500):
     
     return isochrone
 
-def get_isochrones_country(code, amenity, minute, profile, group):
+def get_isochrones_country(code, data, minute, profile):
     """
     calculates the isochrones per country based on mapbox API
     for more detail on the API options, refer to the following link:
@@ -51,10 +51,6 @@ def get_isochrones_country(code, amenity, minute, profile, group):
     ----------
     code : str
         country isoalpha3 code
-    amenity : str
-        string with amenity name, including:
-            financial
-            healthcare
     minute : int 
         distance in minutes from facility 
     profile : str
@@ -62,11 +58,9 @@ def get_isochrones_country(code, amenity, minute, profile, group):
             walking
             cycling
             driving
-    group : str
-        string wtth data group name, including:
-            official
-            public
-            
+    data : str
+        data in csv format with isoalpha3 included
+         
     Returns
     ----------
     geopandas.GeoDataFrame
@@ -74,9 +68,6 @@ def get_isochrones_country(code, amenity, minute, profile, group):
     """
     
     # Infrastructure data
-    # TODO: path must be updated with Data Lake path
-    path = f"../data/0-raw/infrastructure/{amenity}_facilities_{group}.csv"
-    data = pd.read_csv(path, low_memory = False)
     data = data[data.isoalpha3 == code]
     data = data[~data.lat.isna()]
     

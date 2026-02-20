@@ -46,7 +46,6 @@ from src.statistics import *
 
 # Working environments
 dotenv.load_dotenv()
-dotenv.load_dotenv("/Users/lauragoyeneche/Google Drive/My Drive/02-Work/10-IDB Consultant/1-Social Protection & Health/32-IDB Atlas/src/.env")
 sclbucket   = os.environ.get("sclbucket")
 scldatalake = os.environ.get("scldatalake")
 

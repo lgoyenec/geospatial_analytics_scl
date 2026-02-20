@@ -1,4 +1,4 @@
-def get_access(code, amenity, profile, minute, group, popgroup = "total_population"):
+def get_access(code, amenity, profile, minute, isochrone, popdata):
     # TODO: Generalize function
     """
     calculates the coverage percentage per country by admin-2 level and H3 cell (resolution 3)
@@ -18,19 +18,10 @@ def get_access(code, amenity, profile, minute, group, popgroup = "total_populati
             driving
      minute : int 
         distance in minutes from facility 
-    popgroup: str
-        population group (default is `total_population`), including:
-            total_population
-            women
-            men
-            children_under_five
-            youth_15_24
-            elderly_60_plus
-            women_of_reproductive_age_15_49
-    group : str
-        string wtth data group name, including:
-            official
-            public
+    popdata: str
+        population link or csv.gz 
+    isochrone : str
+        isochrone path
     
     Returns
     ----------
@@ -49,8 +40,8 @@ def get_access(code, amenity, profile, minute, group, popgroup = "total_populati
     
         # Population and isochrones
     with fiona.Env(OGR_GEOJSON_MAX_OBJ_SIZE = 2000):  
-        isochrone  = gpd.read_file(f"../data/1-isochrones/{amenity}/{group}/{minute}-min/{code}-{profile}-{minute}.geojson")
-    population = pd.read_csv(f"../data/0-raw/population/{popgroup}/{code}_{popgroup}.csv.gz")
+        isochrone  = isochrone
+    population = popdata
     geometry   = gpd.points_from_xy(population['longitude'], population['latitude'])
     population = gpd.GeoDataFrame(population.copy(), geometry = geometry, crs = 4326)
     
